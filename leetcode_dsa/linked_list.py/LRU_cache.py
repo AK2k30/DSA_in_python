@@ -1,0 +1,57 @@
+class ListNode:
+  def __init__(self, key=None, value=None):
+      self.key = key
+      self.value = value
+      self.prev = None
+      self.next = None
+
+class LRUCache:
+
+  def __init__(self, capacity: int):
+      self.capacity = capacity
+      self.cache = {}
+      self.head = ListNode()
+      self.tail = ListNode()
+      self.head.next = self.tail
+      self.tail.prev = self.head
+
+  def _add_node(self, node):
+      # Add a node right after the head
+      node.prev = self.head
+      node.next = self.head.next
+      self.head.next.prev = node
+      self.head.next = node
+
+  def _remove_node(self, node):
+      # Remove a node from the linked list
+      prev = node.prev
+      new = node.next
+      prev.next = new
+      new.prev = prev
+
+  def _move_to_front(self, node):
+      # Move a node to the front of the linked list
+      self._remove_node(node)
+      self._add_node(node)
+
+  def get(self, key: int) -> int:
+      if key in self.cache:
+          node = self.cache[key]
+          self._move_to_front(node)
+          return node.value
+      return -1
+
+  def put(self, key: int, value: int) -> None:
+      if key in self.cache:
+          node = self.cache[key]
+          node.value = value
+          self._move_to_front(node)
+      else:
+          if len(self.cache) == self.capacity:
+              # Evict the least recently used node
+              to_remove = self.tail.prev
+              self._remove_node(to_remove)
+              del self.cache[to_remove.key]
+          new_node = ListNode(key, value)
+          self.cache[key] = new_node
+          self._add_node(new_node)
